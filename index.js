@@ -1,5 +1,7 @@
 const http = require('http');
 const url = require('url');
+const {StringDecoder} = require('string_decoder');
+
 const server = http.createServer((req, res) => {
 
 
@@ -10,12 +12,33 @@ const server = http.createServer((req, res) => {
     var path = parsedUrl.pathname;
     var trimmedPath = path.replace(/^\/+|\/+$/g, '');
 
+    var queryStringObject = parsedUrl.query;
+
     var method = req.method.toLowerCase();
 
-    res.end('Hello World!\n');
+    var headers = req.headers;
 
-    console.log('Request recieved on this path: ' + trimmedPath + 'with method:'+ method);
-});
+    var decoder = new StringDecoder('utf-8');
+    var buffer = '';
+    req.on('data', function(data) {
+        buffer += decoder.write(data);
+    });
+
+    req.on('end', function() { 
+        buffer += decoder.end();
+
+        res.end('Hello World!\n');
+
+        
+        
+        //if (trimmedPath !== 'favicon.ico') {
+            //console.log(`Request received on this path: ${trimmedPath} with method: ${method} and these query string parameters: ${JSON.stringify(queryStringObject)}`);
+            console.log(`Request recieved with this payload: ${buffer}`);
+            //}
+            
+            //console.log(`Request recieved on this path: ${trimmedPath} with method:${method} and these query string paremeters:${queryStringObject}`);
+        });
+    });
 
 
 
